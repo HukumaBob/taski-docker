@@ -1,32 +1,35 @@
-# docker-compose.production.yml
 version: '3'
 
 volumes:
-  pg_data_production:
-  static_volume:
+  pg_data:
+  static:
+  media:
 
-# Всё отличие — заменяем build на image и указываем, какой образ использовать
 services:
   db:
-    image: postgres:13.10
-    env_file: .env
+    env_file: .env 
+    image: postgres:13  
     volumes:
-      - pg_data_production:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
   backend:
-    image: hukumabob/taski_backend
+    image: hukumabob/kittygram_backend
     env_file: .env
     volumes:
-      - static_volume:/backend_static
+      - static:/backend_static
+      - media:/app/media/
+    depends_on:
+      - db          
   frontend:
-    image: hukumabob/taski_frontend  # Качаем с Docker Hub
     env_file: .env
+    image: hukumabob/kittygram_frontend
     command: cp -r /app/build/. /frontend_static/
     volumes:
-      - static_volume:/frontend_static
+      - static:/frontend_static
   gateway:
-    image: hukumabob/taski_gateway  # Качаем с Docker Hub
     env_file: .env
-    volumes:
-      - static_volume:/staticfiles/
+    image: hukumabob/kittygram_gateway
     ports:
-      - 8000:80
+      - 9000:80
+    volumes:
+      - static:/staticfiles
+      - media:/app/media/
